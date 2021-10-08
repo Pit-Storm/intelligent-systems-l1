@@ -7,8 +7,7 @@ CHOICE=ni
 CHOSEN_H=${CHOICE}_HEURISTIC
 
 lab: lab.cpp Maze.o heuristic.o
-	g++ -Wall Maze.o heuristic.o lab.cpp -o lab
-	mv lab lab_${CHOICE}
+	g++ -Wall Maze.o heuristic.o lab.cpp -o lab_${CHOICE}.bin
 
 Maze.o: Maze.cpp Maze.h
 	g++ -Wall -c Maze.cpp
@@ -23,4 +22,4 @@ clean:
 # Removes the executables, too
 allclean:
 	-rm *.o
-	-rm lab_*
+	-rm *.bin
