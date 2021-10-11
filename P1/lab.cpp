@@ -8,17 +8,45 @@
 
 using namespace std;
 
-// Function to wrtie the foundpath to disk
+// Function to write the foundpath to disk
 int WritePath (lp path, string fp) {
     // TODO:: Actually print the path into the file of fp
     return 0;
 };
 
+lp getChildren (Maze maze, position curr) {
+    lp childrenList;
+    // For every neighbor of curr check:
+    //  if not maze.isObstacle()
+    //  if not is out of board
+    //  else add to neighbors list
+    return childrenList;
+};
+
 // Write here the Astar and all other auxiliary functions you need...
 bool AStar (Maze map, lp& path)
 {
-    // TODO: Implement the Algorithm
-    // TODO: Use the heuristic out of heuristic.cpp
+    // Pseudocode from here: https://www.researchgate.net/figure/A-search-algorithm-Pseudocode-of-the-A-search-algorithm-operating-with-open-and-closed_fig8_232085273
+    float f = 0.0, g = 0.0, gValues[map.GetNumRows()][map.GetNumCols()];
+    lp openList, closedList, children, goals = map.GetGoals();
+    position current = map.GetStart(), prevNodes[map.GetNumRows()][map.GetNumCols()];
+    // TODO: Check if initializing of gValues and prevNodes is corret (Col x Rows or Rows x Cols?)
+
+    openList.push_front(current);
+    f = g + h(current, goals);
+
+    // Algorithm loop
+    while (!openList.empty())
+    {
+        current = openList.front();
+        openList.pop_front();
+        // TODO: Generate the found path
+        if (map.IsGoal(current)) return true;
+        closedList.push_front(current);
+        children = getChildren(map, current);
+        // TODO: Implement to Logic for expanding every child Node
+    };
+
     return false;
 };
 
