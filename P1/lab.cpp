@@ -1,5 +1,7 @@
 #include "Maze.h"
 #include <map>
+#include <limits>
+#include <algorithm>
 
 #define DEB true
 
@@ -8,7 +10,7 @@
 
 using namespace std;
 
-const position invalid_pos = position(9999, 9999);
+const position invalid_pos = position(numeric_limits<unsigned>::max(), numeric_limits<unsigned>::max());
 
 // Function to write the foundpath to disk
 int WritePath (lp path, string fp) {
@@ -16,41 +18,65 @@ int WritePath (lp path, string fp) {
     return 0;
 };
 
-lp getChildren (Maze maze, position curr) {
-    position childrenList[8];
-    position curr_child = invalid_pos;
+float getDistance (position current, position neighbor) {
+    // Distance for north <> south and east <> west is: 1
+    // Distance for diagonal is: sqrt(2)
+
+    // Are we at the North neighbor?
+    if (neighbor.first == current.first && neighbor.second < current.second ) return 1.0;
+    // Are we at the North-East neighbor?
+    if (neighbor.first > current.first && neighbor.second < current.second) return sqrt(2);
+    // Are we at the East neighbor?
+    if (neighbor.first > current.first && neighbor.second == current.second ) return 1.0;
+    // Are we at the South-East neighbor?
+    if (neighbor.first > current.first && neighbor.second > current.second ) return sqrt(2);
+    // Are we at the South neighbor?
+    if (neighbor.first == current.first && neighbor.second > current.second ) return 1.0;
+    // Are we at the South-West neighbor?
+    if (neighbor.first < current.first && neighbor.second > current.second ) return sqrt(2);
+    // Are we at the West neighbor?
+    if (neighbor.first < current.first && neighbor.second == current.second ) return 1.0;
+    // Are we at the North-West neighbor?
+    if (neighbor.first < current.first && neighbor.second < current.second ) return sqrt(2);
+};
+
+lp getNeighbors (Maze maze, position curr) {
+    position neighborsList[8];
+    position curr_neighbor = invalid_pos;
 
     // Check if the curr pos is on the border of the board
     // 0 is thenorthern center field, others following clockwise
-    if (curr.second == 0) childrenList[7,0,1] = invalid_pos;
-    if (curr.first == maze.GetNumCols()) childrenList[1,2,3] = invalid_pos;
-    if (curr.second == maze.GetNumRows()) childrenList[3,4,5] = invalid_pos;
-    if (curr.first == 0) childrenList[5,6,7] = invalid_pos;
+    if (curr.second == 0) neighborsList[7] = neighborsList[0] = neighborsList[1] = invalid_pos;
+    if (curr.first == maze.GetNumCols()) neighborsList[1] = neighborsList[2] = neighborsList[3] = invalid_pos;
+    if (curr.second == maze.GetNumRows()) neighborsList[3] = neighborsList[4] = neighborsList[5] = invalid_pos;
+    if (curr.first == 0) neighborsList[5] = neighborsList[6] = neighborsList[7] = invalid_pos;
 
     // Iterate over all possible child positions
     for (int i = 0; i < 8; i++)
     {
         // If the current child we are evaluating is outside of the board: Skip this iteration
-        if (childrenList[i] == invalid_pos) continue;
+        if (neighborsList[i] == invalid_pos) continue;
 
-        curr_child = curr;
-        // Set the value for the current child object
+        // In each iteration we come from the current position
+        curr_neighbor = curr;
+
+        // From the current position, we create our curr_neighbor position clockwise
         // Move one to north
-        if (i == 7 || 0 || 1) curr_child.second--;
+        if (i == 7 || i == 0 || i == 1) curr_neighbor.second--;
         // Move one to east
-        if (i == 1 || 2 || 3) curr_child.first++;
+        if (i == 1 || i == 2 || i == 3) curr_neighbor.first++;
         // Move one to south
-        if (i == 3 || 4 || 5) curr_child.second++;
+        if (i == 3 || i == 4 || i == 5) curr_neighbor.second++;
         // Move one to west
-        if (i == 5 || 6 || 7) curr_child.first--;
+        if (i == 5 || i == 6 || i == 7) curr_neighbor.first--;
 
-        if (maze.IsObstacle(curr_child))
+        if (maze.IsObstacle(curr_neighbor))
         {
             // When it is an obstacle, it is an invalid position
-            childrenList[i] = invalid_pos;
+            neighborsList[i] = invalid_pos;
         } else {
-            // otherwise add the position to the childrenList at the specific position
-            childrenList[i] = curr_child;
+            // otherwise add the position to the neighborsList at the specific position
+            neighborsList[i] = curr_neighbor;
         };
     };
     
@@ -58,7 +84,7 @@ lp getChildren (Maze maze, position curr) {
     lp returnList;
     for (int i = 0; i<8; i++)
     {
-        if (childrenList[i] != invalid_pos) returnList.push_back(childrenList[i]);
+        if (neighborsList[i] != invalid_pos) returnList.push_back(neighborsList[i]);
     }
 
     return returnList;
@@ -67,37 +93,85 @@ lp getChildren (Maze maze, position curr) {
 // Write here the Astar and all other auxiliary functions you need...
 bool AStar (Maze map, lp& path)
 {
-    // Pseudocode from here: https://www.researchgate.net/figure/A-search-algorithm-Pseudocode-of-the-A-search-algorithm-operating-with-open-and-closed_fig8_232085273
-    float f = 0.0, g = 0.0, gValues[map.GetNumCols()][map.GetNumRows()];
-    lp openList, closedList, children, goals = map.GetGoals();
-    position current = map.GetStart(), prevNodes[map.GetNumCols()][map.GetNumRows()];
+    float temp_g, temp_h, gValues[MAX_SIDE][MAX_SIDE] = {numeric_limits<float>::infinity()}, hValues[MAX_SIDE][MAX_SIDE] = {NAN}, fValues[MAX_SIDE][MAX_SIDE] = {numeric_limits<float>::infinity()};
+    lp neighbors, openList, closedList, goals = map.GetGoals();
+    position neighbor, current = map.GetStart(), prevNodes[MAX_SIDE][MAX_SIDE] = {invalid_pos};
+    lp::iterator nei;
 
-    openList.push_front(current);
-    f = g + h(current, goals);
+    prevNodes[current.first][current.second] = current;
+
+    openList.push_back(current);
+
+    gValues[current.first][current.second] = 0.0;
+    hValues[current.first][current.second] = h(current, goals);
+    fValues[current.first][current.second] = gValues[current.first][current.second]  + hValues[current.first][current.second] ;
 
     // Algorithm loop
     while (!openList.empty())
     {
-        current = *openList.begin();
-        openList.erase(openList.begin());
-        // TODO: Generate the found path
-        if (map.IsGoal(current)) return true;
-        closedList.push_front(current);
-        children = getChildren(map, current);
+        // We need to search the element with the best f value
+        // in the openList, but only, if there is more than one element
+        if (openList.size() > 1) {
+            lp::iterator oli = openList.begin();
+            position curr_pos, best_pos;
+            float curr_f, best_f = numeric_limits<float>::infinity();
+            while (oli != openList.end()) {
+                curr_pos = *oli;
+                curr_f = fValues[curr_pos.first][curr_pos.second];
 
-        // TODO: Implement to Logic for expanding every child Node
-        lp::iterator child = children.begin();
-        while (child!=children.end()) {
-            // If Child in closed list
-                // continue
-            // cost = gValues[current.first][current.second] + getCost(current, child)
-            // if child in open_list and cost < gValues[child.first][child.second]
-                // open_list.erase(child)
-            // if child in closed_list and cost < gValues[child.first][child.second]
-                // closed_list.erase(child)
-            // if child not in open_list and not in closed_list
-                // 
-        }
+                if (curr_f < best_f) {
+                    best_f = curr_f;
+                    best_pos = curr_pos;
+                }
+
+                oli++;
+            }
+            current = best_pos;
+        } else {
+            // Otherwise we can set current to the first element
+            current = *openList.begin();
+        };
+
+        // TODO: Generate the found path
+        if (map.IsGoal(current)) {
+            return true;
+        };
+
+        // The current Node does not need to be expanded anymore
+        openList.remove(current);
+        // The current Node has been expanded
+        closedList.push_back(current);
+        neighbors = getNeighbors(map, current);
+
+        nei = neighbors.begin();
+        while (nei!=neighbors.end()) {
+            neighbor = *nei;
+            // Check if neighbor is not in closed list
+            if (find(closedList.begin(), closedList.end(), neighbor) == closedList.end()) {
+                // Calculate temp_g for neighbor: g(current) + d(current, beighbor)
+                temp_g = gValues[current.first][current.second] + getDistance(current, neighbor);
+                // Check if temp_g is lower than g(neighbor)
+                if (temp_g < gValues[neighbor.first][neighbor.second]) {
+                    // Store our current best g Value for the neighbor
+                    gValues[neighbor.first][neighbor.second] = temp_g;
+                    // Store the related previous Node (it is the current one)
+                    prevNodes[neighbor.first][neighbor.second] = current;
+                    // Cache for h() because it could be calculated multiple times
+                    if (hValues[neighbor.first][neighbor.second] == NAN) {
+                        hValues[neighbor.first][neighbor.second] = temp_h = h(neighbor, goals);
+                    } else {
+                        temp_h = hValues[neighbor.first][neighbor.second];
+                    }
+                    // Store the current f Value for the neighbor
+                    fValues[neighbor.first][neighbor.second] = temp_g + temp_h;
+                    // Check if neighbor is no in openList
+                    if (find(openList.begin(), openList.end(), neighbor) == openList.end())
+                        // Add the neighbor to the openList to maybe expand it
+                        openList.push_back(neighbor);
+                }
+            }
+            nei++;
+        };
     };
 
     return false;
@@ -128,6 +202,8 @@ int main(int argc, char *argv[])
     {
         cerr << "No path has been found for that maze. Writing the empty list.\n";
         foundpath.clear();
+    } else {
+        cout << "Path has been found!\n";
     }
 
     // You must write the WritePath funcion, too. Its second argument is a string with the file name to write the solution
