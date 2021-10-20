@@ -19,25 +19,28 @@ int WritePath (lp path, string fp) {
 };
 
 float getDistance (position current, position neighbor) {
-    // Distance for north <> south and east <> west is: 1
-    // Distance for diagonal is: sqrt(2)
+    float ret;
 
+    //-- Distance for north <> south and east <> west is: 1
+    //-- Distance for diagonal is: sqrt(2)
     // Are we at the North neighbor?
-    if (neighbor.first == current.first && neighbor.second < current.second ) return 1.0;
+    if (neighbor.first == current.first && neighbor.second < current.second ) ret = 1.0;
     // Are we at the North-East neighbor?
-    if (neighbor.first > current.first && neighbor.second < current.second) return sqrt(2);
+    if (neighbor.first > current.first && neighbor.second < current.second) ret = sqrt(2);
     // Are we at the East neighbor?
-    if (neighbor.first > current.first && neighbor.second == current.second ) return 1.0;
+    if (neighbor.first > current.first && neighbor.second == current.second ) ret = 1.0;
     // Are we at the South-East neighbor?
-    if (neighbor.first > current.first && neighbor.second > current.second ) return sqrt(2);
+    if (neighbor.first > current.first && neighbor.second > current.second ) ret = sqrt(2);
     // Are we at the South neighbor?
-    if (neighbor.first == current.first && neighbor.second > current.second ) return 1.0;
+    if (neighbor.first == current.first && neighbor.second > current.second ) ret = 1.0;
     // Are we at the South-West neighbor?
-    if (neighbor.first < current.first && neighbor.second > current.second ) return sqrt(2);
+    if (neighbor.first < current.first && neighbor.second > current.second ) ret = sqrt(2);
     // Are we at the West neighbor?
-    if (neighbor.first < current.first && neighbor.second == current.second ) return 1.0;
+    if (neighbor.first < current.first && neighbor.second == current.second ) ret = 1.0;
     // Are we at the North-West neighbor?
-    if (neighbor.first < current.first && neighbor.second < current.second ) return sqrt(2);
+    if (neighbor.first < current.first && neighbor.second < current.second ) ret = sqrt(2);
+
+    return ret;
 };
 
 lp getNeighbors (Maze maze, position curr) {
