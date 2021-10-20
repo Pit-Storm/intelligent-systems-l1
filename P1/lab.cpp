@@ -43,15 +43,15 @@ float getDistance (position current, position neighbor) {
     return ret;
 };
 
-lp getNeighbors (Maze maze, position curr) {
+lp getNeighbors (Maze* maze, position curr) {
     position neighborsList[8];
     position curr_neighbor = invalid_pos;
 
     // Check if the curr pos is on the border of the board
     // 0 is thenorthern center field, others following clockwise
     if (curr.second == 0) neighborsList[7] = neighborsList[0] = neighborsList[1] = invalid_pos;
-    if (curr.first == maze.GetNumCols()) neighborsList[1] = neighborsList[2] = neighborsList[3] = invalid_pos;
-    if (curr.second == maze.GetNumRows()) neighborsList[3] = neighborsList[4] = neighborsList[5] = invalid_pos;
+    if (curr.first == maze->GetNumCols()) neighborsList[1] = neighborsList[2] = neighborsList[3] = invalid_pos;
+    if (curr.second == maze->GetNumRows()) neighborsList[3] = neighborsList[4] = neighborsList[5] = invalid_pos;
     if (curr.first == 0) neighborsList[5] = neighborsList[6] = neighborsList[7] = invalid_pos;
 
     // Iterate over all possible child positions
@@ -73,7 +73,7 @@ lp getNeighbors (Maze maze, position curr) {
         // Move one to west
         if (i == 5 || i == 6 || i == 7) curr_neighbor.first--;
 
-        if (maze.IsObstacle(curr_neighbor))
+        if (maze->IsObstacle(curr_neighbor))
         {
             // When it is an obstacle, it is an invalid position
             neighborsList[i] = invalid_pos;
@@ -94,11 +94,11 @@ lp getNeighbors (Maze maze, position curr) {
 };
 
 // Write here the Astar and all other auxiliary functions you need...
-bool AStar (Maze map, lp& path)
+bool AStar (Maze* map, lp* path)
 {
     float temp_g, temp_h, gValues[MAX_SIDE][MAX_SIDE] = {numeric_limits<float>::infinity()}, hValues[MAX_SIDE][MAX_SIDE] = {NAN}, fValues[MAX_SIDE][MAX_SIDE] = {numeric_limits<float>::infinity()};
-    lp neighbors, openList, closedList, goals = map.GetGoals();
-    position neighbor, current = map.GetStart(), prevNodes[MAX_SIDE][MAX_SIDE] = {invalid_pos};
+    lp neighbors, openList, closedList, goals = map->GetGoals();
+    position neighbor, current = map->GetStart(), prevNodes[MAX_SIDE][MAX_SIDE] = {invalid_pos};
     lp::iterator nei;
 
     prevNodes[current.first][current.second] = current;
@@ -109,12 +109,14 @@ bool AStar (Maze map, lp& path)
     hValues[current.first][current.second] = h(current, goals);
     fValues[current.first][current.second] = gValues[current.first][current.second]  + hValues[current.first][current.second] ;
 
+    if (DEB) cout << "We are before the algo loop...";
     // Algorithm loop
     while (!openList.empty())
     {
         // We need to search the element with the best f value
         // in the openList, but only, if there is more than one element
         if (openList.size() > 1) {
+            if (DEB) cout << "OpenList has more then one Element";
             lp::iterator oli = openList.begin();
             position curr_pos, best_pos;
             float curr_f, best_f = numeric_limits<float>::infinity();
@@ -131,12 +133,14 @@ bool AStar (Maze map, lp& path)
             }
             current = best_pos;
         } else {
+            if (DEB) cout << "OpenList has 1 Element.";
             // Otherwise we can set current to the first element
             current = *openList.begin();
         };
 
         // TODO: Generate the found path
-        if (map.IsGoal(current)) {
+        if (map->IsGoal(current)) {
+            if (DEB) cout << "Solution has been found! :-)";
             return true;
         };
 
@@ -146,12 +150,13 @@ bool AStar (Maze map, lp& path)
         closedList.push_back(current);
         neighbors = getNeighbors(map, current);
 
+        if (DEB) cout << "Checking for all neighbors...";
         nei = neighbors.begin();
         while (nei!=neighbors.end()) {
             neighbor = *nei;
             // Check if neighbor is not in closed list
             if (find(closedList.begin(), closedList.end(), neighbor) == closedList.end()) {
-                // Calculate temp_g for neighbor: g(current) + d(current, beighbor)
+                // Calculate temp_g for neighbor: g(current) + d(current, neighbor)
                 temp_g = gValues[current.first][current.second] + getDistance(current, neighbor);
                 // Check if temp_g is lower than g(neighbor)
                 if (temp_g < gValues[neighbor.first][neighbor.second]) {
@@ -173,10 +178,13 @@ bool AStar (Maze map, lp& path)
                         openList.push_back(neighbor);
                 }
             }
+            if (DEB) cout << "One neighbor processed.";
             nei++;
         };
+        if (DEB) cout << "All neighbors processed. Going to next iteration.";
     };
 
+    if (DEB) cout << "No solution found :-(";
     return false;
 };
 
@@ -200,7 +208,7 @@ int main(int argc, char *argv[])
 
     // Think here which argument should be passed to the Astar function.
     // and think how the last one, the foundpath, must be passed...
-    bool result = AStar(lab, foundpath);
+    bool result = AStar(&lab, &foundpath);
     if (result==false)
     {
         cerr << "No path has been found for that maze. Writing the empty list.\n";
