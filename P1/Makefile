@@ -2,7 +2,7 @@
 # Non-informative
 CHOICE=ni
 # Any other: give it a name that matches your 'heuristic.cpp'
-# CHOICE=anyname
+# CHOICE=euklid
 
 CHOSEN_H=${CHOICE}_HEURISTIC
 
