@@ -7,7 +7,7 @@
 
 #include "structures.h"
 
-#define MAX_SIDE 1024
+#define MAX_SIDE 64
 #define MAX_DESC_LEN 65536
 #define COMPACT_REP true
 

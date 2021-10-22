@@ -4,8 +4,7 @@
 #include <algorithm>
 
 #define DEB true
-#define DEB_2 false
-// #define SIDE MAX_SIDE
+#define SIDE MAX_SIDE
 
 #include "heuristic.h"
 // Don't forget to implement the heuristics in heuristic.cpp....
@@ -95,24 +94,18 @@ lp getNeighbors (Maze &maze, position curr) {
     return returnList;
 };
 
-void TestFunc (Maze &map, lp &path) {
-     cout << "Works..." << endl;
-};
-
 // Write here the Astar and all other auxiliary functions you need...
-bool AStar (Maze map, lp path)
+bool AStar (Maze &map, lp &path)
 {
-    cout << "I am in the ASTar" << endl;
-    cout.flush();
-    float temp_g, temp_h, gValues[1024][1024] = {numeric_limits<float>::infinity()}, hValues[1024][1024] = {NAN}, fValues[1024][1024] = {numeric_limits<float>::infinity()};
+    float temp_g, temp_h, gValues[SIDE][SIDE], hValues[SIDE][SIDE], fValues[SIDE][SIDE];
     lp neighbors, openList, closedList, goals = map.GetGoals();
-    cout << "I am in the ASTar" << endl;
-    cout.flush();
-    position neighbor, current = map.GetStart(), prevNodes[1024][1024] = {invalid_pos};
-    cout << "I am in the ASTar after declaring positin" << endl;
-    cout.flush();
+    position neighbor, current = map.GetStart(), prevNodes[SIDE][SIDE];
     lp::iterator nei;
-
+    // filling the arrays with range based for loops
+    for (auto& col : gValues) { for (float& row : col) { row = numeric_limits<float>::infinity();}};
+    for (auto& col : hValues) { for (float& row : col) { row = numeric_limits<float>::infinity();}};
+    for (auto& col : fValues) { for (float& row : col) { row = numeric_limits<float>::infinity();}};
+    for (auto& col : prevNodes) { for (position& row : col) { row = invalid_pos;}};
 
     prevNodes[current.first][current.second] = current;
 
@@ -122,14 +115,13 @@ bool AStar (Maze map, lp path)
     hValues[current.first][current.second] = h(current, goals);
     fValues[current.first][current.second] = gValues[current.first][current.second]  + hValues[current.first][current.second] ;
 
-    if (DEB) cout << "We are before the algo loop...";
+    if (DEB) cout << "We are before the algo loop..." << endl;
     // Algorithm loop
     while (!openList.empty())
     {
         // We need to search the element with the best f value
         // in the openList, but only, if there is more than one element
         if (openList.size() > 1) {
-            if (DEB) cout << "OpenList has more then one Element";
             lp::iterator oli = openList.begin();
             position curr_pos, best_pos;
             float curr_f, best_f = numeric_limits<float>::infinity();
@@ -146,14 +138,13 @@ bool AStar (Maze map, lp path)
             }
             current = best_pos;
         } else {
-            if (DEB) cout << "OpenList has 1 Element.";
             // Otherwise we can set current to the first element
             current = *openList.begin();
         };
 
         // TODO: Generate the found path
         if (map.IsGoal(current)) {
-            if (DEB) cout << "Solution has been found! :-)";
+            if (DEB) cout << "Solution has been found! :-)" << endl;
             return true;
         };
 
@@ -163,7 +154,6 @@ bool AStar (Maze map, lp path)
         closedList.push_back(current);
         neighbors = getNeighbors(map, current);
 
-        if (DEB) cout << "Checking for all neighbors...";
         nei = neighbors.begin();
         while (nei!=neighbors.end()) {
             neighbor = *nei;
@@ -178,26 +168,25 @@ bool AStar (Maze map, lp path)
                     // Store the related previous Node (it is the current one)
                     prevNodes[neighbor.first][neighbor.second] = current;
                     // Cache for h() because it could be calculated multiple times
-                    if (hValues[neighbor.first][neighbor.second] == NAN) {
+                    if (hValues[neighbor.first][neighbor.second] == numeric_limits<float>::infinity()) {
                         hValues[neighbor.first][neighbor.second] = temp_h = h(neighbor, goals);
                     } else {
                         temp_h = hValues[neighbor.first][neighbor.second];
-                    }
+                    };
                     // Store the current f Value for the neighbor
                     fValues[neighbor.first][neighbor.second] = temp_g + temp_h;
-                    // Check if neighbor is no in openList
-                    if (find(openList.begin(), openList.end(), neighbor) == openList.end())
+                    // Check if neighbor is not in openList
+                    if (find(openList.begin(), openList.end(), neighbor) == openList.end()) {
                         // Add the neighbor to the openList to maybe expand it
                         openList.push_back(neighbor);
-                }
-            }
-            if (DEB) cout << "One neighbor processed.";
+                    };
+                };
+            };
             nei++;
         };
-        if (DEB) cout << "All neighbors processed. Going to next iteration.";
     };
 
-    if (DEB) cout << "No solution found :-(";
+    if (DEB) cout << "No solution found :-(" << endl;
     return false;
 };
 
@@ -218,10 +207,6 @@ int main(int argc, char *argv[])
 
     lp foundpath;
     foundpath.clear();
-
-    if (DEB_2) {
-        TestFunc(lab, foundpath);
-    }
 
     // Think here which argument should be passed to the Astar function.
     // and think how the last one, the foundpath, must be passed...
