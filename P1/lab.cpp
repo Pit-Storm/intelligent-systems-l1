@@ -4,6 +4,8 @@
 #include <algorithm>
 
 #define DEB true
+#define DEB_2 false
+// #define SIDE MAX_SIDE
 
 #include "heuristic.h"
 // Don't forget to implement the heuristics in heuristic.cpp....
@@ -43,15 +45,15 @@ float getDistance (position current, position neighbor) {
     return ret;
 };
 
-lp getNeighbors (Maze* maze, position curr) {
+lp getNeighbors (Maze &maze, position curr) {
     position neighborsList[8];
     position curr_neighbor = invalid_pos;
 
     // Check if the curr pos is on the border of the board
     // 0 is thenorthern center field, others following clockwise
     if (curr.second == 0) neighborsList[7] = neighborsList[0] = neighborsList[1] = invalid_pos;
-    if (curr.first == maze->GetNumCols()) neighborsList[1] = neighborsList[2] = neighborsList[3] = invalid_pos;
-    if (curr.second == maze->GetNumRows()) neighborsList[3] = neighborsList[4] = neighborsList[5] = invalid_pos;
+    if (curr.first == maze.GetNumCols()) neighborsList[1] = neighborsList[2] = neighborsList[3] = invalid_pos;
+    if (curr.second == maze.GetNumRows()) neighborsList[3] = neighborsList[4] = neighborsList[5] = invalid_pos;
     if (curr.first == 0) neighborsList[5] = neighborsList[6] = neighborsList[7] = invalid_pos;
 
     // Iterate over all possible child positions
@@ -73,7 +75,7 @@ lp getNeighbors (Maze* maze, position curr) {
         // Move one to west
         if (i == 5 || i == 6 || i == 7) curr_neighbor.first--;
 
-        if (maze->IsObstacle(curr_neighbor))
+        if (maze.IsObstacle(curr_neighbor))
         {
             // When it is an obstacle, it is an invalid position
             neighborsList[i] = invalid_pos;
@@ -93,12 +95,16 @@ lp getNeighbors (Maze* maze, position curr) {
     return returnList;
 };
 
+void TestFunc (Maze &map, lp &path) {
+     cout << "Works..." << endl;
+};
+
 // Write here the Astar and all other auxiliary functions you need...
-bool AStar (Maze* map, lp* path)
+bool AStar (Maze &map, lp &path)
 {
-    float temp_g, temp_h, gValues[MAX_SIDE][MAX_SIDE] = {numeric_limits<float>::infinity()}, hValues[MAX_SIDE][MAX_SIDE] = {NAN}, fValues[MAX_SIDE][MAX_SIDE] = {numeric_limits<float>::infinity()};
-    lp neighbors, openList, closedList, goals = map->GetGoals();
-    position neighbor, current = map->GetStart(), prevNodes[MAX_SIDE][MAX_SIDE] = {invalid_pos};
+    float temp_g, temp_h, gValues[1024][1024] = {numeric_limits<float>::infinity()}, hValues[1024][1024] = {NAN}, fValues[1024][1024] = {numeric_limits<float>::infinity()};
+    lp neighbors, openList, closedList, goals = map.GetGoals();
+    position neighbor, current = map.GetStart(), prevNodes[1024][1024] = {invalid_pos};
     lp::iterator nei;
 
     prevNodes[current.first][current.second] = current;
@@ -139,7 +145,7 @@ bool AStar (Maze* map, lp* path)
         };
 
         // TODO: Generate the found path
-        if (map->IsGoal(current)) {
+        if (map.IsGoal(current)) {
             if (DEB) cout << "Solution has been found! :-)";
             return true;
         };
@@ -206,9 +212,13 @@ int main(int argc, char *argv[])
     lp foundpath;
     foundpath.clear();
 
+    if (DEB_2) {
+        TestFunc(&lab, &foundpath);
+    }
+
     // Think here which argument should be passed to the Astar function.
     // and think how the last one, the foundpath, must be passed...
-    bool result = AStar(&lab, &foundpath);
+    bool result = AStar(lab, foundpath);
     if (result==false)
     {
         cerr << "No path has been found for that maze. Writing the empty list.\n";
