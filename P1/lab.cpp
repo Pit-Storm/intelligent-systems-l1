@@ -100,12 +100,19 @@ void TestFunc (Maze &map, lp &path) {
 };
 
 // Write here the Astar and all other auxiliary functions you need...
-bool AStar (Maze &map, lp &path)
+bool AStar (Maze map, lp path)
 {
+    cout << "I am in the ASTar" << endl;
+    cout.flush();
     float temp_g, temp_h, gValues[1024][1024] = {numeric_limits<float>::infinity()}, hValues[1024][1024] = {NAN}, fValues[1024][1024] = {numeric_limits<float>::infinity()};
     lp neighbors, openList, closedList, goals = map.GetGoals();
+    cout << "I am in the ASTar" << endl;
+    cout.flush();
     position neighbor, current = map.GetStart(), prevNodes[1024][1024] = {invalid_pos};
+    cout << "I am in the ASTar after declaring positin" << endl;
+    cout.flush();
     lp::iterator nei;
+
 
     prevNodes[current.first][current.second] = current;
 
@@ -213,7 +220,7 @@ int main(int argc, char *argv[])
     foundpath.clear();
 
     if (DEB_2) {
-        TestFunc(&lab, &foundpath);
+        TestFunc(lab, foundpath);
     }
 
     // Think here which argument should be passed to the Astar function.
