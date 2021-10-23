@@ -2,6 +2,7 @@
 #include <map>
 #include <limits>
 #include <algorithm>
+#include <fstream>
 
 #define DEB true
 #define SIDE MAX_SIDE
@@ -15,8 +16,27 @@ const position invalid_pos = position(numeric_limits<unsigned>::max(), numeric_l
 
 // Function to write the foundpath to disk
 int WritePath (lp path, string fp) {
-    // TODO:: Actually print the path into the file of fp
-    return 0;
+    ofstream file;
+    string positions;
+
+    for (auto & pos : path) {
+        positions.append("[");
+        positions.append(to_string(pos.first));
+        positions.append(",");
+        positions.append(to_string(pos.second));
+        positions.append("],");
+    }
+
+    file.open(fp);
+    if (!file) {
+        cerr << "Could not open file for foundpath!" << endl;
+    };
+
+    file << "[" << endl;
+    file << positions.substr(0,positions.length()-1) << endl;
+    file << "]" << endl;
+    file.close();
+    return 1;
 };
 
 float getDistance (position current, position neighbor) {
@@ -115,7 +135,6 @@ bool AStar (Maze &map, lp &path)
     hValues[current.first][current.second] = h(current, goals);
     fValues[current.first][current.second] = gValues[current.first][current.second]  + hValues[current.first][current.second] ;
 
-    if (DEB) cout << "We are before the algo loop..." << endl;
     // Algorithm loop
     while (!openList.empty())
     {
@@ -142,9 +161,14 @@ bool AStar (Maze &map, lp &path)
             current = *openList.begin();
         };
 
-        // TODO: Generate the found path
         if (map.IsGoal(current)) {
-            if (DEB) cout << "Solution has been found! :-)" << endl;
+            position temp_curr = current;
+            while (prevNodes[temp_curr.first][temp_curr.second] != temp_curr) {
+                path.push_front(temp_curr);
+                temp_curr = prevNodes[temp_curr.first][temp_curr.second];
+            }
+            path.push_front(temp_curr);
+            cout << "The cost of the found path is: \t\t" << gValues[current.first][current.second] << endl;
             return true;
         };
 
@@ -223,6 +247,12 @@ int main(int argc, char *argv[])
     if (DEB)
     {
         string outfile = "foundpath";
+        #ifdef ni_HEURISTIC
+        outfile.append("_ni");
+        #endif
+        #ifdef euklid_HEURISTIC
+        outfile.append("_euklid");
+        #endif
         WritePath(foundpath, outfile);
     }
 

@@ -7,10 +7,10 @@ CHOICE=ni
 CHOSEN_H=${CHOICE}_HEURISTIC
 
 lab: lab.cpp Maze.o heuristic.o
-	g++ -Wall Maze.o heuristic.o lab.cpp -o lab_${CHOICE}.bin
+	g++ -Wall Maze.o heuristic.o -D${CHOSEN_H} lab.cpp -o lab_${CHOICE}.bin
 
 lab_debug: lab.cpp Maze.o heuristic.o
-	g++ -Wall -g Maze.o heuristic.o lab.cpp -o lab_${CHOICE}_debug.bin
+	g++ -Wall -g Maze.o heuristic.o -D${CHOSEN_H} lab.cpp -o lab_${CHOICE}_debug.bin
 
 Maze.o: Maze.cpp Maze.h
 	g++ -Wall -c Maze.cpp
