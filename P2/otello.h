@@ -1,7 +1,7 @@
 #ifndef _OTELLO_H
 #define _OTELLO_H
 
-#define DEB true
+#define DEB false
 
 #include <stdlib.h>
 

@@ -2,16 +2,16 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "P1 Build",
+			"label": "Build",
 			"type": "shell",
-			"command": "make -C P1 lab",
+			"command": "make -C P2 otell_test",
 			"group": {
 				"kind": "build",
 				"isDefault": true
 			},
 			"problemMatcher": {
 				"owner": "cpp",
-				"fileLocation": ["relative", "${workspaceFolder}/P1"],
+				"fileLocation": ["relative", "${workspaceFolder}/P2"],
 				"pattern": {
 				  "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
 				  "file": 1,
@@ -23,16 +23,16 @@
 			}
 		},
 		{
-			"label": "P1 Build Debug",
+			"label": "Build Debug",
 			"type": "shell",
-			"command": "make -C P1 lab_debug",
+			"command": "make -C P2 otello_test_debug",
 			"group": {
-				"kind": "build",
-				"isDefault": false
+				"kind": "test",
+				"isDefault": true
 			},
 			"problemMatcher": {
 				"owner": "cpp",
-				"fileLocation": ["relative", "${workspaceFolder}/P1"],
+				"fileLocation": ["relative", "${workspaceFolder}/P2"],
 				"pattern": {
 				  "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
 				  "file": 1,

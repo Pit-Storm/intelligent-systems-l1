@@ -1,7 +1,12 @@
-all: otello_test
+all: clean otello_test
+
+debug: clean otello_test_debug
 
 otello_test: otello_test.cpp otello.o minimax.o alphabeta.o heuristic.o
-	g++ -Wall otello.o minimax.o alphabeta.o heuristic.o otello_test.cpp -o otello_test
+	g++ -Wall otello.o minimax.o alphabeta.o heuristic.o otello_test.cpp -o otello_test.bin
+
+otello_test_debug: otello_test.cpp otello.o minimax.o alphabeta.o heuristic.o
+	g++ -Wall -g otello.o minimax.o alphabeta.o heuristic.o otello_test.cpp -o otello_test_debug.bin
 
 otello.o: otello.cpp otello.h
 	g++ -Wall -c otello.cpp
@@ -17,5 +22,5 @@ heuristic.o: heuristic.cpp heuristic.h otello.h
 
 clean:
 	-rm -f *.o
-	-rm -f otello_test
+	-rm -f *.bin
 

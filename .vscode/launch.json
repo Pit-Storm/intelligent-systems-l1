@@ -5,12 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "P1 ni Debug",
+            "name": "Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/P1/lab_ni_debug.bin",
-            "args": ["P1/enttest1"],
-            "stopAtEntry": false,
+            "program": "${workspaceFolder}/P2/otello_test_debug.bin",
+            "args": ["BOB_RANDOM"],
+            "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
