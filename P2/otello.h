@@ -2,6 +2,7 @@
 #define _OTELLO_H
 
 #define DEB false
+#define DEB_2 false
 
 #include <stdlib.h>
 
