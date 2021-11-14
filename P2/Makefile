@@ -1,3 +1,10 @@
+# Choose the heuristic to compile with
+# CHOSEN_H=H_DISKS
+# CHOSEN_H=H_MOBI
+# CHOSEN_H=H_POSI
+# CHOSEN_H=H_COMBI
+CHOSEN_H=H_TIMEREL
+
 all: clean otello_test
 
 debug: clean otello_test_debug
@@ -18,7 +25,7 @@ alphabeta.o: alphabeta.cpp alphabeta.h otello.h
 	g++ -Wall -c alphabeta.cpp
 
 heuristic.o: heuristic.cpp heuristic.h otello.h
-	g++ -Wall -c heuristic.cpp
+	g++ -Wall -D${CHOSEN_H} -c heuristic.cpp
 
 clean:
 	-rm -f *.o

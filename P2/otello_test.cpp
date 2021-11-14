@@ -2,9 +2,9 @@
 #include "alphabeta.h"
 #include <string.h>
 #include <stdio.h>
-// #include <stdlib.h>
 #include <ctime>
 #include <numeric>
+#include <iomanip>
 
 // The rounds to play for statistics
 #define ROUNDS 500
@@ -38,8 +38,7 @@ int main(int argc,char *argv[]) {
     exit(1);
   }
 
-  float scores_bob[ROUNDS], scores_alice[ROUNDS];
-  unsigned wins_bob = 0, wins_alice = 0;
+  unsigned wins_bob = 0, wins_alice = 0, scores_bob[ROUNDS], scores_alice[ROUNDS];
 
   cout << "Starting gameplay..." << endl;
   for (unsigned round = 0; round < ROUNDS; round++) {
@@ -164,29 +163,41 @@ int main(int argc,char *argv[]) {
       if (winner_score==looser_score)
         cout << "Well, yeah, I know this is a tie, but in such a case ladies win, don't they?\n";
     }
+
+    // Add the en of this round to the players statistics
+    // For Bob
     if (Name(winner) == "Bob") {
-      wins_bob += 1;
+      wins_bob++;
       scores_bob[round] = winner_score;
     } else {
       scores_bob[round] = looser_score;
     }
+    // And for Alice
     if (Name(winner) == "Alice") {
-      wins_alice += 1;
+      wins_alice++;
       scores_alice[round] = winner_score;
     } else {
       scores_alice[round] = looser_score;
     }
+
+    // Output for control that the script is running
     if (round % 10 == 0) {
-      cout << "Round #" << round << " "; cout << flush;
+      cout << "Round #" << setw(3) << setfill('0') << round << " " << flush;
     }
     if ((round+1) % 100 == 0) cout << endl;
   }
+
+  // Calculating and printing the results of the experiment
   unsigned sum_bob = 0, sum_alice = 0;
   sum_bob = accumulate(scores_bob,scores_bob+ROUNDS,sum_bob);
   sum_alice = accumulate(scores_alice,scores_alice+ROUNDS,sum_alice);
-  cout << "All rounds played. The results are:" << endl;
+  cout << "\n\nPlayed rounds:\t\t" << ROUNDS << endl;
+  cout << "Alpha-Beta-Pruning?\t" << PRUNE << endl;
+  cout << "Search depth:\t\t" << chosen_depth << endl;
+  cout  << endl;
+  cout << "The results are:" << endl;
   cout << "Metric\t\tBob\tAlice" << endl;
-  cout << "Avg. Score\t" << sum_bob/ROUNDS  << "\t" <<  sum_alice/ROUNDS << endl;
+  cout << "Avg. Score\t" << (sum_bob/ROUNDS)  << "\t" <<  (sum_alice/ROUNDS) << endl;
   cout << "Won Games\t" << wins_bob << "\t" << wins_alice << endl;
 }
 
